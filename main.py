@@ -1,4 +1,5 @@
 import logging
+import datetime
 import requests
 from telegram.ext import (
     ApplicationBuilder,
@@ -24,8 +25,16 @@ class TranslationBot:
         self.target_lang = DEFAULT_TARGET_LANG
         self.translator = GoogleTranslator(source='auto', target=DEFAULT_TARGET_LANG)
 
+    async def _write_to_log(self, message):
+        with open('info.txt', "a", encoding="utf-8") as f:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[{timestamp}] {message}\n")
+
     async def start(self, update, context):
         user = update.effective_user
+        log_msg = f"Пользователь {user.id} ({user.first_name}) запустил бота"
+        await self._write_to_log(log_msg)
+
         await update.message.reply_text(
             f"👋 Привет, {user.first_name}!\n"
             f"Я бот-переводчик. Сейчас перевожу на {self.target_lang}.\n\n"
@@ -64,6 +73,7 @@ class TranslationBot:
 
     async def translate_text(self, update, context):
         text = update.message.text.strip()
+        await self._write_to_log(f"User {update.effective_user.id} Хочет перевести: {text}")
 
         if not text:
             await update.message.reply_text("❌ Вы отправили пустое сообщение")
@@ -82,6 +92,7 @@ class TranslationBot:
             return
 
         city_name = ' '.join(context.args)
+        await self._write_to_log(f"User {update.effective_user.id} Хочет узнать погоду в городе: {city_name}")
 
         try:
             # 1. Геокодирование: получаем координаты города
@@ -175,3 +186,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# можно добавить запись в info ко всем функциям
+# базу данных с orm??

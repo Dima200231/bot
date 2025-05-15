@@ -1,0 +1,4 @@
+pip==23.2.1
+python-telegram-bot==22.0
+requests==2.32.3
+deep_translator==1.11.4
